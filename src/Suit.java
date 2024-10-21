@@ -1,3 +1,6 @@
 public enum Suit {
-    CLUB, DIAMOND, HEART, SPADE
+    CLUB,       // Kreuz
+    DIAMOND,    // Karo
+    HEART,      // Herz
+    SPADE       // Pik
 }
