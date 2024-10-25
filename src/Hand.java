@@ -30,28 +30,10 @@ public class Hand {
         // This will involve checking for various hand combinations
         // such as pairs, straights, flushes, etc.
 
-        // Example logic (not complete):
-        // 1. Sort the cards by rank
+        // Sort the cards by rank
         Arrays.sort(cards, Comparator.comparing(Card::getRank));
 
-        // check for one pair
-        boolean isOnePair = false;
-        for (int i = 0; i < cards.length - 1; i++) {
-            if (cards[i].getRank().getValue() == cards[i + 1].getRank().getValue()) {
-                isOnePair = true;
-                break;
-            }
-        }
-        if (isOnePair) {
-            return HandVal.PAIR;
-        }
-
-        // 2. Check for flush
-        boolean isFlush = Arrays.stream(cards).allMatch(card -> card.getSuit() == cards[0].getSuit());
-        if (isFlush) {
-            return HandVal.FLUSH;
-        }
-        // 3. Check for straight
+        // 1. Check for straight
         boolean isStraight = true;
         for (int i = 0; i < cards.length - 1; i++) {
             if (cards[i].getRank().getValue() != cards[i + 1].getRank().getValue() - 1) {
@@ -64,23 +46,92 @@ public class Hand {
                 cards[2].getRank() == Rank.FOUR && cards[3].getRank() == Rank.FIVE && cards[4].getRank() == Rank.ACE) {
             isStraight = true;
         }
-        if (isStraight) {
-            return HandVal.STRAIGHT;
+
+        // 2. checks for same suit
+        boolean isSameSuit = Arrays.stream(cards).allMatch(card -> card.getSuit() == cards[0].getSuit());
+
+        // 3. Straight flush or royal flush
+        if (isStraight && isSameSuit) {
+            // check royal flush
+            if (cards[0].getRank() == Rank.TEN && cards[1].getRank() == Rank.JACK &&
+                    cards[2].getRank() == Rank.QUEEN && cards[3].getRank() == Rank.KING &&
+                    cards[4].getRank() == Rank.ACE) {
+                return HandVal.ROYAL_FLUSH;
+            } else {
+                return HandVal.STRAIGHT_FLUSH;
+            }
         }
-        // check for poker
-        boolean isPoker = false;
+
+        // 4. check for four of a kind
         for (int i = 0; i < cards.length - 3; i++) {
-            if (cards[i].getRank().getValue() == cards[i + 1].getRank().getValue() &&
-                    cards[i].getRank().getValue() == cards[i + 2].getRank().getValue() &&
-                    cards[i].getRank().getValue() == cards[i + 3].getRank().getValue()) {
-                isPoker = true;
+            int cardValue = cards[i].getRank().getValue();
+            if (cardValue == cards[i + 1].getRank().getValue() &&
+                    cardValue == cards[i + 2].getRank().getValue() &&
+                    cardValue == cards[i + 3].getRank().getValue()) {
+                return HandVal.POKER;
+            }
+        }
+
+        // 5. check for full house
+
+        // check triple
+        boolean isThreeOfAKind = false;
+        int isThreeOfAKindValue = -1;
+        for (int i = 0; i < cards.length - 2; i++) {
+            int cardValue = cards[i].getRank().getValue();
+            if (cardValue == cards[i + 1].getRank().getValue() &&
+                    cardValue == cards[i + 2].getRank().getValue()) {
+                isThreeOfAKind = true;
+                isThreeOfAKindValue = cardValue;
                 break;
             }
         }
-        if (isPoker) {
-            return HandVal.POKER;
+
+        // check pair
+        boolean isPair = false;
+        int isPairValue = -1;
+        for (int i = 0; i < cards.length - 1; i++) {
+            if (cards[i].getRank().getValue() == cards[i + 1].getRank().getValue()) {
+                isPair = true;
+                isPairValue = cards[i].getRank().getValue();
+                if (isPairValue != isThreeOfAKindValue) {
+                    break;
+                }
+            }
         }
-        // 4. Check for pairs, three of a kind, four of a kind
+
+        if (isThreeOfAKind && isPair && isThreeOfAKindValue != isPairValue) {
+            return HandVal.FULL_HOUSE;
+        }
+
+        if (isSameSuit) {
+            return HandVal.FLUSH;
+        }
+
+        if (isStraight) {
+            return HandVal.STRAIGHT;
+        }
+
+        if (isThreeOfAKind) {
+            return HandVal.THREE_OF_A_KIND;
+        }
+
+        // check for two pairs
+        for (int i = 0; i < cards.length - 1; i++) {
+            int cardValue = cards[i].getRank().getValue();
+            if (cardValue == cards[i + 1].getRank().getValue()) {
+                for (int j = i + 2; j < cards.length - 1; j++) {
+                    int cardValue2 = cards[j].getRank().getValue();
+                    if (cardValue2 == cards[j + 1].getRank().getValue()) {
+                        return HandVal.TWO_PAIRS;
+                    }
+                }
+            }
+        }
+
+        if (isPair) {
+            return HandVal.PAIR;
+        }
 
         // 5. Determine the highest value hand
         return HandVal.HIGH_CARD;
@@ -98,7 +149,7 @@ public class Hand {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (Card card : cards) {
-            sb.append(card).append("\n");  // new line after each card
+            sb.append(card).append("\n"); // new line after each card
         }
         return sb.toString().trim();
     }
