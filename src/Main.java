@@ -1,73 +1,98 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.LinkedList;
+
 public class Main {
+
     public static void main(String[] args) {
-        Card card1 = new Card(Suit.SPADE, Rank.ACE);
-        Card card2 = new Card(Suit.HEART, Rank.TWO);
-        Card card3 = new Card(Suit.DIAMOND, Rank.THREE);
-        Card card4 = new Card(Suit.CLUB, Rank.FOUR);
-        Card card5 = new Card(Suit.SPADE, Rank.FIVE);
+        String fileName = "Hands to be tested.txt";
+        FileReader fReader = null;
+        List<String> list = new LinkedList<>();
+        try {
+            try {
+                fReader = new FileReader(fileName);
+            } catch (FileNotFoundException e) {
+                System.out.println(String.format("The file \"%s\" is not present in this directory", fileName));
+                System.exit(1);
+            }
 
-        Hand hand = new Hand(new Card[] { card1, card2, card3, card4, card5 });
-        System.out.println(hand);
-        System.out.println("===============> " + hand.getHandValue());
+            BufferedReader reader = new BufferedReader(fReader);
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                line = stripFull(line);
+                if (line.equals("")) {
+                    continue;
+                }
 
-        // royal flush example
-        hand = new Hand("ST SJ SQ SK SA");
-        System.out.println(hand);
-        System.out.println("Royal flush");
-        System.out.println("===============> " + hand.getHandValue());
+                list.add(line + "\n");
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        // straight flush example
-        hand = new Hand("S6 S7 S8 S9 ST");
-        System.out.println(hand);
-        System.out.println("Straight flush");
-        System.out.println("===============> " + hand.getHandValue());
+        HandVal[] values = new HandVal[] {
+                HandVal.ROYAL_FLUSH,
+                HandVal.STRAIGHT_FLUSH,
+                HandVal.POKER,
+                HandVal.FULL_HOUSE,
+                HandVal.FLUSH,
+                HandVal.STRAIGHT,
+                HandVal.THREE_OF_A_KIND,
+                HandVal.TWO_PAIRS,
+                HandVal.PAIR,
+                HandVal.HIGH_CARD
+        };
 
-        // four of a kind example
-        hand = new Hand("S6 H6 D6 C6 ST");
-        System.out.println(hand);
-        System.out.println("four of a kind");
-        System.out.println("===============> " + hand.getHandValue());
+        int i = -1;
+        for (String line : list) {
+            // test next HandVal
+            if (line.charAt(0) == '/') {
+                i++;
+                continue;
+            }
 
-        // full house example
-        hand = new Hand("S6 H6 D6 CT ST");
-        System.out.println(hand);
-        System.out.println("full house");
-        System.out.println("===============> " + hand.getHandValue());
+            testHand(line, values[i]);
+        }
+    }
 
-        // flush example
-        hand = new Hand("S2 S4 S6 S8 ST");
-        System.out.println(hand);
-        System.out.println("flush");
-        System.out.println("===============> " + hand.getHandValue());
+    private static void testHand(String handDesc, HandVal expectedVal) {
+        Hand hand = new Hand(handDesc);
+        String result = expectedVal.toString();
+        if (hand.getHandValue() == expectedVal) {
+            result = result + " OK";
+        } else {
+            result = result + " NOT OK";
+        }
 
-        // straight example
-        hand = new Hand("S6 H7 D8 C9 ST");
-        System.out.println(hand);
-        System.out.println("straight");
-        System.out.println("===============> " + hand.getHandValue());
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("Output.txt", true));
+            writer.write(result);
+            writer.newLine();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
-        // three of a kind example
-        hand = new Hand("S6 H6 D6 C8 ST");
-        System.out.println(hand);
-        System.out.println("three of a kind");
-        System.out.println("===============> " + hand.getHandValue());
+    }
 
-        // two pairs example
-        hand = new Hand("S6 H6 D8 C8 ST");
-        System.out.println(hand);
-        System.out.println("two pairs");
-        System.out.println("===============> " + hand.getHandValue());
+    private static String stripFull(String str) {
+        String stripped = str.strip();
+        String newStr = "";
+        for (char character : stripped.toCharArray()) {
+            if (character == '"' || character == ',') {
+                continue;
+            }
 
-        // pair example
-        hand = new Hand("S6 H7 D8 CT ST");
-        System.out.println(hand);
-        System.out.println("pair");
-        System.out.println("===============> " + hand.getHandValue());
+            newStr = newStr + character;
+        }
 
-        // high card example
-        hand = new Hand("S2 H3 D4 C6 S8");
-        System.out.println(hand);
-        System.out.println("high card");
-        System.out.println("===============> " + hand.getHandValue());
+        return newStr;
     }
 }
