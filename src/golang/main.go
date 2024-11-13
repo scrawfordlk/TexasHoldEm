@@ -21,12 +21,9 @@ func main() {
 
 	// Test Full House
 	testHand("H2 SQ C2 D2 CQ", poker.FULL_HOUSE)
-	testHand("D2 DJ D2 D2 DJ", poker.FULL_HOUSE)
 	testHand("H2 SJ C2 D2 CJ", poker.FULL_HOUSE)
-	testHand("D2 DJ D2 D2 DJ", poker.FULL_HOUSE)
 
 	// Test Flush
-	testHand("HK HQ H2 H4 H5", poker.FLUSH)
 	testHand("HK HQ H2 H4 H5", poker.FLUSH)
 	testHand("D5 D4 D2 DQ DK", poker.FLUSH)
 
@@ -42,9 +39,7 @@ func main() {
 
 	// Test Two Pairs
 	testHand("H5 SQ C5 DT CT", poker.TWO_PAIR)
-	testHand("D5 DK S5 DT DT", poker.TWO_PAIR)
 	testHand("H9 SQ C9 DT CT", poker.TWO_PAIR)
-	testHand("D8 DK S8 DT DT", poker.TWO_PAIR)
 
 	// Test One Pair
 	testHand("H3 S8 H5 D8 CA", poker.PAIR)
